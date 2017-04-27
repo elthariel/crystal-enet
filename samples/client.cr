@@ -5,21 +5,28 @@ if ARGV.size != 1
   exit 42
 end
 
-Enet.init
-puts "Running Enet version: #{Enet.version}"
-addr = Enet::Address.new ARGV[0]
-client = Enet::Host.new
-peer = client.connect addr
-if peer.nil?
-  puts "Unable to connect"
-  exit 21
-end
-run = true
-while run
-  peer.channel(0_u8).send "Message !"
-  client.flush
-  client.service do |event|
-    puts "Received event : #{event.to_s}"
+class MyClient < Enet::Client
+  BANDWIDTH = 32_u32 * 1024
+
+  def initialize(addr)
+    super(addr, 32_u32, 32_u32, BANDWIDTH, BANDWIDTH)
+  end
+
+  # Calls when the receive call timesout, i.e. no event was received
+  def on_none(event)
+    if connected?
+      puts "Sendind a ping..."
+      channel(0_u8).send("Ping")
+    end
+  end
+
+  def on_receive(event)
+    puts "Received a pong"
   end
 end
+
+Enet.init
+puts "Running Enet version: #{Enet.version}"
+client = MyClient.new(ARGV[0])
+client.run
 Enet.deinit

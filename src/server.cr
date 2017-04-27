@@ -1,67 +1,26 @@
 #
-# ENet Server. Subclass it for goodness
+# High level server class
 #
 
-require "./host"
+require "./host_service_loop"
+
+macro event_handler(name)
+  def on_{{name.id}}(event)
+    puts "Received a {{name}} event. Override #on_{{name.id}} to handle it"
+  end
+end
 
 module Enet
-  class Server
-    @running = false
-
-    def initialize(bind_addr : String,
-                   max_peers : UInt32,
-                   max_chans : UInt32,
-                   down_bw : UInt32,
-                   up_bw : UInt32)
-      addr = Address.new bind_addr
-      @host = Host.new(addr, max_peers, max_chans, down_bw, up_bw)
-    end
-
-    def running?
-      @running
-    end
-
-    def stop
-      @running = false
-    end
-
-    def run
-      @running = true
-
-      puts "Running server..."
-
-      while @running
-        @host.service(100) do |event|
-          peer = event.peer
-
-          case event.event_type
-          when :connect
-            on_connect(event)
-          when :disconnect
-            on_disconnect(event)
-          when :receive
-            on_receive(event)
-          when :none
-            on_none(event)
-          end
-        end
-      end
-    end
-
-    def on_connect(event)
-      puts "Connect event #{event}"
-    end
-
-    def on_disconnect(event)
-      puts "Disconnect event #{event}"
-    end
-
-    def on_receive(event)
-      puts "Receive event #{event}"
+  class Server < HostServiceLoop
+    def on_event(event)
     end
 
     def on_none(event)
-      puts "NONE EVENT : #{event}"
+      puts "No event received within #{timeout}ms (#on_none). Retrying..."
     end
+
+    event_handler :connect
+    event_handler :disconnect
+    event_handler :receive
   end
 end

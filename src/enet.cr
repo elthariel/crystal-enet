@@ -8,6 +8,7 @@ require "./packet"
 require "./peer"
 require "./host"
 require "./server"
+require "./client"
 
 module Enet
   class Error < Exception

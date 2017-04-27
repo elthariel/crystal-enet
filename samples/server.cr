@@ -17,6 +17,11 @@ class MyServer < Enet::Server
 
   def on_receive(event)
     puts "#{event.peer.to_s} received data"
+    peer = event.peer
+
+    unless peer.nil?
+      peer.channel(0_u8).send("Pong")
+    end
   end
 end
 
