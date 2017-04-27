@@ -1,5 +1,6 @@
-# Emacs files
+# Editors files
 *~
+.#*
 
 # Our build stuff
 client
