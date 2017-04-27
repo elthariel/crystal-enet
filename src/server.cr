@@ -33,9 +33,6 @@ module Enet
       while @running
         @host.service(100) do |event|
           peer = event.peer
-          unless peer.nil?
-            puts peer.hexdump
-          end
 
           case event.event_type
           when :connect
